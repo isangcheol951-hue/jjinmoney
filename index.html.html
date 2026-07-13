@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>찐머니 매거진</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@500;700;900&family=Noto+Sans+KR:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #FAF8F4;
+    --card: #FFFFFF;
+    --ink: #1C1B19;
+    --ink-soft: #837C70;
+    --green: #1F5C4A;
+    --green-soft: #E4EEE9;
+    --gold: #D9A441;
+    --coral: #E2624F;
+    --line: #E7E0D3;
+    --serif: 'Noto Serif KR', serif;
+    --sans: 'Noto Sans KR', sans-serif;
+    --mono: 'Space Mono', monospace;
+  }
+  * { box-sizing: border-box; margin:0; padding:0; }
+  body { background: var(--paper); color: var(--ink); font-family: var(--sans); line-height:1.65; -webkit-font-smoothing:antialiased; }
+  a { color:inherit; text-decoration:none; }
+  .wrap { max-width: 1080px; margin:0 auto; padding: 0 24px; }
+  button { font-family: var(--sans); cursor:pointer; }
+
+  /* MASTHEAD */
+  .masthead { border-bottom: 2px solid var(--ink); padding: 26px 0 16px; }
+  .masthead-top { display:flex; justify-content:space-between; align-items:baseline; }
+  .masthead-issue { font-family: var(--mono); font-size:12px; color: var(--ink-soft); letter-spacing:.05em; }
+  .masthead-title { font-family: var(--serif); font-weight:900; font-size:44px; text-align:center; margin: 8px 0 4px; letter-spacing:-0.01em; }
+  .masthead-sub { text-align:center; font-size:13px; color: var(--ink-soft); font-family: var(--mono); letter-spacing:.04em; }
+  .masthead-nav { display:flex; justify-content:center; gap:26px; margin-top:18px; font-size:13px; font-weight:700; }
+  .masthead-nav a { padding-bottom:4px; border-bottom:2px solid transparent; }
+  .masthead-nav a:hover { border-color: var(--gold); }
+  .add-btn {
+    position: fixed; right: 28px; bottom: 28px; z-index: 50;
+    background: var(--ink); color: var(--paper); border:none;
+    padding: 16px 24px; border-radius: 999px; font-weight:700; font-size:14px;
+    box-shadow: 0 12px 30px -10px rgba(0,0,0,0.4);
+    display:flex; align-items:center; gap:8px;
+  }
+  .add-btn:hover { background: var(--green); }
+
+  /* FEATURED */
+  .featured { padding: 48px 0 20px; }
+  .eyebrow { font-family: var(--mono); font-size:12px; color: var(--coral); letter-spacing:.06em; margin-bottom:10px; }
+  .featured-card {
+    display:grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items:center;
+    background: var(--card); border:1px solid var(--line); border-radius: 18px; overflow:hidden;
+  }
+  @media (max-width: 800px){ .featured-card{ grid-template-columns:1fr; } }
+  .featured-visual {
+    height: 320px; display:flex; align-items:center; justify-content:center; font-size:96px;
+    background: linear-gradient(135deg, var(--green-soft), #fff);
+  }
+  .featured-body { padding: 12px 36px 12px 0; }
+  @media (max-width: 800px){ .featured-body{ padding: 0 24px 32px; } }
+  .featured-body h2 { font-family: var(--serif); font-size:30px; line-height:1.4; margin-bottom:12px; }
+  .featured-body p { color: var(--ink-soft); font-size:14.5px; margin-bottom:18px; }
+  .tip-badge {
+    display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12px;
+    background: var(--green-soft); color: var(--green); padding:5px 12px; border-radius:999px; font-weight:700;
+  }
+
+  /* SECTION HEAD */
+  .section-head { display:flex; justify-content:space-between; align-items:flex-end; margin: 56px 0 24px; border-bottom:1px solid var(--line); padding-bottom:14px; }
+  .section-head h3 { font-family: var(--serif); font-size:22px; }
+  .filter-tags { display:flex; gap:8px; flex-wrap:wrap; }
+  .filter-tag {
+    font-family: var(--mono); font-size:11.5px; padding:6px 12px; border-radius:999px;
+    border:1px solid var(--line); color: var(--ink-soft); background:var(--card);
+  }
+  .filter-tag.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+  /* GRID */
+  .grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding-bottom: 60px; }
+  @media (max-width: 860px){ .grid{ grid-template-columns: repeat(2,1fr);} }
+  @media (max-width: 580px){ .grid{ grid-template-columns: 1fr;} }
+
+  .card {
+    background: var(--card); border:1px solid var(--line); border-radius:16px; overflow:hidden;
+    display:flex; flex-direction:column; cursor:pointer; transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 16px 30px -18px rgba(0,0,0,.35); }
+  .card-visual { height: 150px; display:flex; align-items:center; justify-content:center; font-size:48px; position:relative; }
+  .card-badge {
+    position:absolute; top:10px; right:10px; background: var(--card); border:1px solid var(--line);
+    font-family: var(--mono); font-size:10.5px; font-weight:700; padding:4px 8px; border-radius:999px; color: var(--ink);
+  }
+  .card-body { padding: 16px 18px 20px; flex:1; display:flex; flex-direction:column; }
+  .card-cat { font-family: var(--mono); font-size:11px; color: var(--coral); margin-bottom:8px; }
+  .card-title { font-family: var(--serif); font-weight:700; font-size:17px; line-height:1.4; margin-bottom:8px; }
+  .card-desc { font-size:13px; color: var(--ink-soft); flex:1; }
+  .card-meta { font-family: var(--mono); font-size:11px; color: var(--ink-soft); margin-top:12px; padding-top:12px; border-top:1px dashed var(--line); }
+
+  .empty { text-align:center; padding: 60px 20px; color: var(--ink-soft); }
+  .empty .icon { font-size:40px; margin-bottom:12px; }
+
+  /* MODALS */
+  .overlay { position:fixed; inset:0; background: rgba(28,27,25,0.5); display:none; align-items:center; justify-content:center; z-index:100; padding:20px; }
+  .overlay.show { display:flex; }
+  .modal {
+    background: var(--paper); border-radius:20px; max-width: 640px; width:100%;
+    max-height: 88vh; overflow-y:auto; padding: 32px;
+  }
+  .modal-close { float:right; background:none; border:none; font-size:20px; color: var(--ink-soft); }
+  .modal h3 { font-family: var(--serif); font-size:24px; margin-bottom: 22px; clear:both; }
+  .field { margin-bottom:16px; }
+  .field label { display:block; font-size:12.5px; font-weight:700; margin-bottom:6px; color: var(--ink); }
+  .field input, .field select, .field textarea {
+    width:100%; padding:11px 14px; border:1px solid var(--line); border-radius:10px;
+    font-family: var(--sans); font-size:14px; background: var(--card);
+  }
+  .field textarea { min-height: 160px; resize: vertical; line-height:1.6; }
+  .field .hint { font-size:11.5px; color: var(--ink-soft); margin-top:5px; }
+  .submit-btn {
+    width:100%; background: var(--green); color:#fff; border:none; padding:14px; border-radius:999px;
+    font-weight:700; font-size:15px; margin-top:6px;
+  }
+  .submit-btn:disabled { opacity:0.5; }
+
+  /* DETAIL */
+  .detail-cat { font-family: var(--mono); font-size:12px; color: var(--coral); margin-bottom:10px; }
+  .detail-title { font-family: var(--serif); font-size:26px; margin-bottom:14px; line-height:1.4; }
+  .detail-meta { font-family: var(--mono); font-size:11.5px; color: var(--ink-soft); margin-bottom:22px; }
+  .detail-body { font-size:15px; white-space: pre-wrap; }
+  .detail-body p { margin-bottom: 14px; }
+
+  footer { text-align:center; padding: 30px 0 60px; color: var(--ink-soft); font-size:12.5px; }
+
+  .toast {
+    position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--ink); color: var(--paper); padding: 12px 22px; border-radius:999px; font-size:13.5px;
+    transition: transform .25s ease; z-index: 200;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media (prefers-reduced-motion: reduce) { .card, .toast { transition:none; } }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="wrap masthead-top">
+    <span class="masthead-issue">2026 · VOL. <span id="issue-num">01</span></span>
+    <span class="masthead-issue">생활 재테크 매거진</span>
+  </div>
+  <div class="masthead-title">찐머니</div>
+  <div class="masthead-sub">JJINMONEY — 진짜 내 돈을 지키는 실전 가이드</div>
+  <div class="masthead-nav">
+    <a href="#featured">이번 호</a>
+    <a href="#archive">아카이브</a>
+  </div>
+</div>
+
+<div class="wrap">
+  <section class="featured" id="featured">
+    <div class="eyebrow">// EDITOR'S PICK</div>
+    <div class="featured-card" id="featured-card"></div>
+  </section>
+
+  <div class="section-head" id="archive">
+    <h3>아카이브</h3>
+    <div class="filter-tags" id="filter-tags"></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <footer>© 2026 찐머니 매거진 · 상철님과 Claude가 함께 만드는 중</footer>
+</div>
+
+<button class="add-btn" onclick="openAddModal()">✎ 새 가이드 올리기</button>
+
+<!-- ADD MODAL -->
+<div class="overlay" id="add-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAddModal()">✕</button>
+    <h3>새 가이드 올리기</h3>
+    <div class="field">
+      <label>카테고리</label>
+      <select id="f-category">
+        <option>수입 늘리기</option>
+        <option>지출 관리</option>
+        <option>부수입</option>
+        <option>리스크 헷지</option>
+        <option>절세</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>제목</label>
+      <input id="f-title" placeholder="예: 첫 월급 받으면 통장부터 쪼개세요">
+    </div>
+    <div class="field">
+      <label>한 줄 요약</label>
+      <input id="f-desc" placeholder="카드에 보일 짧은 설명 (30자 내외)">
+    </div>
+    <div class="field">
+      <label>대표 이모지</label>
+      <input id="f-emoji" placeholder="💵" maxlength="2">
+    </div>
+    <div class="field">
+      <label>본문 (지식을 편하게 던져주세요, 문단은 줄바꿈 두번으로 구분)</label>
+      <textarea id="f-body" placeholder="여기에 아는 내용을 편하게 써주세요. 이걸 기반으로 다음 단계에서 같이 다듬으면 돼요."></textarea>
+      <div class="hint">※ 지금은 원문 그대로 저장돼요. 다듬는 건 다음 단계에서 함께 해요.</div>
+    </div>
+    <button class="submit-btn" id="submit-btn" onclick="submitArticle()">가이드 저장하기</button>
+  </div>
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="overlay" id="detail-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeDetailModal()">✕</button>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const CATS = ["수입 늘리기","지출 관리","부수입","리스크 헷지","절세"];
+const CAT_EMOJI = {"수입 늘리기":"💵","지출 관리":"📉","부수입":"🧩","리스크 헷지":"🛡️","절세":"🧾"};
+
+// 시드 가이드 (처음 방문시 기본으로 보여줄 것들)
+const SEED = [
+  { id:"seed1", category:"수입 늘리기", title:"첫 월급 받은 사회초년생, 통장 4개로 쪼개는 법", desc:"월급날마다 헷갈리지 않게 자동이체 세팅까지", emoji:"💵",
+    body:"월급이 들어오면 가장 먼저 할 일은 통장을 쪼개는 거예요.\n\n1) 월급통장 - 급여만 스치듯 지나가는 곳\n2) 생활비통장 - 고정지출과 변동지출\n3) 저축통장 - 자동이체로 먼저 떼어놓기\n4) 비상금통장 - 손대지 않는 돈\n\n월급날 다음날 자동이체를 걸어두면 신경 쓸 일이 없어져요.", date:"2026.07.01" },
+  { id:"seed2", category:"지출 관리", title:"매달 새던 5만원, 구독료 다이어트로 찾기", desc:"안 쓰는 구독 서비스 찾아내는 3분 체크리스트", emoji:"✂️",
+    body:"구독료는 적은 금액이 여러 개 쌓여서 새는 대표적인 지출이에요.\n\n카드 앱의 정기결제 내역을 한 번에 확인하고, 최근 한 달간 실제로 사용하지 않은 서비스는 과감히 해지하세요.\n\n특히 무료체험 후 자동전환된 구독은 놓치기 쉬우니 꼭 확인해보세요.", date:"2026.07.03" },
+  { id:"seed3", category:"부수입", title:"퇴근 후 30분, 앱테크로 커피값 벌기", desc:"실제로 되는 앱만 골라서 정리했어요", emoji:"📱",
+    body:"앱테크는 큰돈은 아니지만 확실한 부수입이에요.\n\n걷기 적립, 리서치 설문, 영수증 리뷰 등 매일 조금씩 쌓이는 구조를 만드는 게 핵심입니다.\n\n무리하게 여러 개를 하기보다 2~3개만 꾸준히 하는 게 오래 갑니다.", date:"2026.07.05" },
+  { id:"seed4", category:"리스크 헷지", title:"보험 다시 볼 때 됐다, 실비보험 리모델링법", desc:"중복 보장 빼고 꼭 필요한 것만 남기는 순서", emoji:"🛡️",
+    body:"보험은 한 번 가입하면 잘 안 들여다보게 되는데, 1년에 한 번은 점검이 필요해요.\n\n먼저 내가 가진 모든 보험의 보장 내용을 한 곳에 정리하고, 중복되는 항목을 찾아보세요.\n\n실손보험은 필수, 나머지는 내 상황에 맞게 조정하는 게 원칙이에요.", date:"2026.07.08" },
+  { id:"seed5", category:"절세", title:"13월의 월급, 놓치기 쉬운 공제 5가지", desc:"연말정산 전에 딱 5분만 투자하세요", emoji:"🧾",
+    body:"연말정산에서 놓치기 쉬운 공제 항목들이 있어요.\n\n월세 세액공제, 중소기업 취업자 소득세 감면, 신용카드와 체크카드 사용 비율 조정, 개인연금저축 공제, 의료비 공제까지 미리 챙겨두면 환급액이 달라집니다.", date:"2026.07.10" },
+];
+
+let articles = [];
+let activeFilter = "전체";
+
+async function loadArticles() {
+  let stored = [];
+  try {
+    const list = await window.storage.list('article:');
+    if (list && list.keys && list.keys.length) {
+      const results = await Promise.all(list.keys.map(k => window.storage.get(k).catch(()=>null)));
+      stored = results.filter(Boolean).map(r => JSON.parse(r.value));
+    }
+  } catch (e) {
+    console.error('불러오기 실패', e);
+  }
+  articles = [...stored, ...SEED].sort((a,b) => (b.date || '').localeCompare(a.date || ''));
+  render();
+}
+
+function render() {
+  document.getElementById('issue-num').textContent = String(articles.length).padStart(2,'0');
+
+  // featured = 최신글
+  const featured = articles[0];
+  const fc = document.getElementById('featured-card');
+  if (featured) {
+    fc.innerHTML = `
+      <div class="featured-visual">${featured.emoji || '📝'}</div>
+      <div class="featured-body">
+        <div class="eyebrow">${featured.category}</div>
+        <h2>${escapeHtml(featured.title)}</h2>
+        <p>${escapeHtml(featured.desc || '')}</p>
+        <span class="tip-badge" onclick="openDetail('${featured.id}')" style="cursor:pointer">자세히 보기 →</span>
+      </div>`;
+  }
+
+  // filter tags
+  const ft = document.getElementById('filter-tags');
+  const allCats = ["전체", ...CATS];
+  ft.innerHTML = allCats.map(c => `<span class="filter-tag ${c===activeFilter?'active':''}" onclick="setFilter('${c}')">${c}</span>`).join('');
+
+  // grid
+  const list = activeFilter === "전체" ? articles : articles.filter(a => a.category === activeFilter);
+  const grid = document.getElementById('grid');
+  if (!list.length) {
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="icon">📭</div>아직 이 카테고리엔 글이 없어요</div>`;
+    return;
+  }
+  grid.innerHTML = list.map(a => `
+    <div class="card" onclick="openDetail('${a.id}')">
+      <div class="card-visual" style="background:${catColor(a.category)}">
+        ${a.emoji || CAT_EMOJI[a.category] || '📝'}
+        <span class="card-badge">${a.category}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-cat">${a.date || ''}</div>
+        <div class="card-title">${escapeHtml(a.title)}</div>
+        <div class="card-desc">${escapeHtml(a.desc || '')}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function catColor(cat) {
+  const map = { "수입 늘리기":"#E4EEE9", "지출 관리":"#FDECE9", "부수입":"#FBF1DD", "리스크 헷지":"#E4EEE9", "절세":"#FDECE9" };
+  return map[cat] || "#F1EEE6";
+}
+
+function setFilter(c) { activeFilter = c; render(); }
+
+function escapeHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str || '';
+  return d.innerHTML;
+}
+
+function openAddModal() { document.getElementById('add-overlay').classList.add('show'); }
+function closeAddModal() { document.getElementById('add-overlay').classList.remove('show'); }
+function openDetail(id) {
+  const a = articles.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('detail-content').innerHTML = `
+    <div class="detail-cat">${a.category}</div>
+    <div class="detail-title">${escapeHtml(a.title)}</div>
+    <div class="detail-meta">${a.date || ''}</div>
+    <div class="detail-body">${escapeHtml(a.body || a.desc || '').split('\\n\\n').map(p=>`<p>${p.replace(/\\n/g,'<br>')}</p>`).join('')}</div>
+  `;
+  document.getElementById('detail-overlay').classList.add('show');
+}
+function closeDetailModal() { document.getElementById('detail-overlay').classList.remove('show'); }
+
+async function submitArticle() {
+  const title = document.getElementById('f-title').value.trim();
+  const desc = document.getElementById('f-desc').value.trim();
+  const category = document.getElementById('f-category').value;
+  const emoji = document.getElementById('f-emoji').value.trim();
+  const body = document.getElementById('f-body').value.trim();
+
+  if (!title || !body) {
+    showToast('제목이랑 본문은 꼭 채워주세요');
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+
+  const id = 'user_' + Date.now();
+  const article = {
+    id, title, desc, category, emoji, body,
+    date: new Date().toISOString().slice(0,10).replace(/-/g,'.')
+  };
+
+  try {
+    const result = await window.storage.set('article:' + id, JSON.stringify(article));
+    if (!result) throw new Error('저장 실패');
+    document.getElementById('f-title').value = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-emoji').value = '';
+    document.getElementById('f-body').value = '';
+    closeAddModal();
+    showToast('가이드가 저장됐어요 🎉');
+    await loadArticles();
+  } catch (e) {
+    console.error(e);
+    showToast('저장에 실패했어요, 다시 시도해주세요');
+  } finally {
+    btn.disabled = false; btn.textContent = '가이드 저장하기';
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+loadArticles();
+</script>
+
+</body>
+</html>
