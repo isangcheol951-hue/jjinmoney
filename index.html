@@ -48,11 +48,19 @@
   /* FEATURED */
   .featured { padding: 48px 0 20px; }
   .eyebrow { font-family: var(--mono); font-size:12px; color: var(--coral); letter-spacing:.06em; margin-bottom:10px; }
-  .featured-card {
+
+  .issue-highlight {
+    position: relative;
     display:grid; grid-template-columns: 1fr 1.2fr; gap: 40px; align-items:center;
-    background: var(--card); border:1px solid var(--line); border-radius: 18px; overflow:hidden;
+    background: var(--card); border:2px solid var(--gold); border-radius: 18px; overflow:hidden;
+    box-shadow: 0 18px 36px -22px rgba(217,164,65,0.5);
   }
-  @media (max-width: 800px){ .featured-card{ grid-template-columns:1fr; } }
+  @media (max-width: 800px){ .issue-highlight{ grid-template-columns:1fr; } }
+  .issue-badge {
+    position:absolute; top:16px; left:16px; z-index:2;
+    background: var(--gold); color: var(--ink); font-family: var(--mono); font-size:11px; font-weight:700;
+    padding:5px 12px; border-radius:999px; letter-spacing:.04em;
+  }
   .featured-visual {
     height: 320px; display:flex; align-items:center; justify-content:center; font-size:96px;
     background: linear-gradient(135deg, var(--green-soft), #fff);
@@ -65,6 +73,20 @@
     display:inline-flex; align-items:center; gap:6px; font-family:var(--mono); font-size:12px;
     background: var(--green-soft); color: var(--green); padding:5px 12px; border-radius:999px; font-weight:700;
   }
+
+  .issue-recent-head {
+    font-family: var(--mono); font-size:11.5px; color: var(--ink-soft); letter-spacing:.05em;
+    margin: 28px 0 12px;
+  }
+  .issue-recent { display:grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 860px){ .issue-recent{ grid-template-columns: repeat(2,1fr);} }
+  .issue-recent-card {
+    background: var(--card); border:1px solid var(--line); border-radius:12px; padding: 14px 16px;
+    cursor:pointer; transition: border-color .15s ease;
+  }
+  .issue-recent-card:hover { border-color: var(--gold); }
+  .issue-recent-card .cat { font-family: var(--mono); font-size:10.5px; color: var(--coral); margin-bottom:6px; }
+  .issue-recent-card .title { font-family: var(--serif); font-size:14px; line-height:1.4; font-weight:700; }
 
   /* SECTION HEAD */
   .section-head { margin: 56px 0 20px; border-bottom:1px solid var(--line); padding-bottom:14px; }
@@ -177,6 +199,30 @@
     padding:10px 20px; border-radius:999px; font-weight:700; font-size:13px;
   }
 
+  /* QUIZ MODE SELECT */
+  .quiz-mode-select { display:flex; flex-direction:column; gap:12px; }
+  .quiz-mode-card {
+    text-align:left; padding: 18px 20px; border:1.5px solid var(--line); border-radius:14px; background: var(--card);
+  }
+  .quiz-mode-card:hover { border-color: var(--gold); }
+  .quiz-mode-card .mode-title { font-family: var(--serif); font-size:16px; font-weight:700; margin-bottom:4px; }
+  .quiz-mode-card .mode-desc { font-size:12.5px; color: var(--ink-soft); }
+
+  /* FULL QUIZ RESULT */
+  .axis-row { margin-bottom: 16px; text-align:left; }
+  .axis-row .axis-label { display:flex; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:4px; }
+  .axis-dots { font-family: var(--mono); font-size:16px; color: var(--gold); letter-spacing:2px; }
+  .axis-comment { font-size:12px; color: var(--ink-soft); margin-top:3px; }
+  .allocation-box {
+    background: var(--green-soft); border-radius:12px; padding:16px; margin: 18px 0; text-align:left;
+  }
+  .allocation-box .alloc-title { font-family: var(--mono); font-size:11px; color: var(--green); font-weight:700; margin-bottom:8px; }
+  .allocation-box .alloc-value { font-family: var(--serif); font-size:15px; line-height:1.6; }
+  .insight-box {
+    background: var(--paper); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:16px;
+    text-align:left; font-size:13px; line-height:1.7;
+  }
+
   @media (prefers-reduced-motion: reduce) { .card, .toast { transition:none; } }
 </style>
 </head>
@@ -199,7 +245,9 @@
 <div class="wrap">
   <section class="featured" id="featured">
     <div class="eyebrow">// EDITOR'S PICK</div>
-    <div class="featured-card" id="featured-card"></div>
+    <div class="issue-highlight" id="issue-highlight"></div>
+    <div class="issue-recent-head">최근 발행</div>
+    <div class="issue-recent" id="issue-recent"></div>
   </section>
 
   <div class="section-head" id="archive">
@@ -372,18 +420,28 @@ function onMainCategoryChange() {
 function render() {
   document.getElementById('issue-num').textContent = String(articles.length).padStart(2,'0');
 
-  const featured = articles[0];
-  const fc = document.getElementById('featured-card');
-  if (featured) {
-    fc.innerHTML = `
-      <div class="featured-visual">${featured.emoji || '📝'}</div>
+  const highlight = articles[0];
+  const hEl = document.getElementById('issue-highlight');
+  if (highlight) {
+    hEl.innerHTML = `
+      <span class="issue-badge">최신 발행</span>
+      <div class="featured-visual">${highlight.emoji || '📝'}</div>
       <div class="featured-body">
-        <div class="eyebrow">${featured.category} · ${featured.subcategory || ''}</div>
-        <h2>${escapeHtml(featured.title)}</h2>
-        <p>${escapeHtml(featured.desc || '')}</p>
-        <span class="tip-badge" onclick="openDetail('${featured.id}')" style="cursor:pointer">자세히 보기 →</span>
+        <div class="eyebrow">${highlight.category} · ${highlight.subcategory || ''}</div>
+        <h2>${escapeHtml(highlight.title)}</h2>
+        <p>${escapeHtml(highlight.desc || '')}</p>
+        <span class="tip-badge" onclick="openDetail('${highlight.id}')" style="cursor:pointer">자세히 보기 →</span>
       </div>`;
   }
+
+  const recentEl = document.getElementById('issue-recent');
+  const recent = articles.slice(1, 5);
+  recentEl.innerHTML = recent.map(a => `
+    <div class="issue-recent-card" onclick="openDetail('${a.id}')">
+      <div class="cat">${a.category} · ${a.date || ''}</div>
+      <div class="title">${escapeHtml(a.title)}</div>
+    </div>
+  `).join('');
 
   // main filter
   const fm = document.getElementById('filter-main');
@@ -543,42 +601,139 @@ const QUIZ_RESULTS = {
   }
 };
 
+// ----- 정밀 진단 (9문항, 4개 축) -----
+const FULL_QUESTIONS = [
+  { axis:"loss", text:"Q1. 보유 자산의 평가액이 절반으로 감소할 경우, 어떻게 대응하시겠습니까?",
+    options:[
+      { label:"즉시 매도를 고려한다", score:0 },
+      { label:"일정 기간 상황을 지켜본다", score:1 },
+      { label:"추가 매수의 기회로 판단한다", score:2 },
+    ]},
+  { axis:"loss", text:"Q2. 투자 원금 대비 10% 손실이 발생했을 때, 심리적으로 어떠십니까?",
+    options:[
+      { label:"매우 불안하여 원금 회복만 생각하게 된다", score:0 },
+      { label:"다소 불안하나 계획대로 유지한다", score:1 },
+      { label:"변동성의 일부로 받아들인다", score:2 },
+    ]},
+  { axis:"loss", text:"Q3. 감내할 수 있는 최대 손실 비율은 어느 정도라고 판단하십니까?",
+    options:[
+      { label:"원금 손실은 감내하기 어렵다", score:0 },
+      { label:"10~20% 내외는 감내할 수 있다", score:1 },
+      { label:"30% 이상도 감내할 수 있다", score:2 },
+    ]},
+  { axis:"horizon", text:"Q4. 해당 자금은 언제 사용할 계획이십니까?",
+    options:[
+      { label:"1년 이내 사용할 가능성이 있다", score:0 },
+      { label:"3~5년간은 사용할 계획이 없다", score:1 },
+      { label:"10년 이상 장기 보유가 가능하다", score:2 },
+    ]},
+  { axis:"horizon", text:"Q5. 투자하려는 자금의 성격은 무엇에 가깝습니까?",
+    options:[
+      { label:"단기 생활자금과 일부 중첩된다", score:0 },
+      { label:"중기 목적자금(주택, 결혼 등)이다", score:1 },
+      { label:"장기 여유자금(노후 대비 등)이다", score:2 },
+    ]},
+  { axis:"stability", text:"Q6. 생활비 3~6개월분에 해당하는 비상 자금을 보유하고 계십니까?",
+    options:[
+      { label:"보유하고 있지 않다", score:0 },
+      { label:"일부 보유하고 있다", score:1 },
+      { label:"충분히 보유하고 있다", score:2 },
+    ]},
+  { axis:"stability", text:"Q7. 현재 소득의 안정성을 어떻게 평가하십니까?",
+    options:[
+      { label:"불안정한 편이다 (프리랜서, 사업 초기 등)", score:0 },
+      { label:"보통 수준이다", score:1 },
+      { label:"안정적이다 (정규직 등)", score:2 },
+    ]},
+  { axis:"experience", text:"Q8. 주식, 펀드 등 위험자산에 대한 투자 경험은 어느 정도이십니까?",
+    options:[
+      { label:"투자 경험이 없다", score:0 },
+      { label:"1~3년 정도의 경험이 있다", score:1 },
+      { label:"3년 이상의 경험이 있다", score:2 },
+    ]},
+  { axis:"experience", text:"Q9. ELS, 파생결합상품 등 구조화 금융상품의 구조를 이해하고 계십니까?",
+    options:[
+      { label:"잘 알지 못한다", score:0 },
+      { label:"기본적인 구조는 이해하고 있다", score:1 },
+      { label:"상세한 구조까지 이해하고 있다", score:2 },
+    ]},
+];
+
+const AXIS_META = {
+  loss:       { label:"손실 감내도", max:6 },
+  horizon:    { label:"투자 기간",   max:4 },
+  stability:  { label:"재정 안정성", max:4 },
+  experience: { label:"투자 경험",   max:4 },
+};
+
+const ALLOCATION_BY_GRADE = {
+  low:  "예금성 자산 70% · 채권혼합형 20% · 주식형 10%",
+  mid:  "예금성 자산 40% · 채권혼합형 30% · 주식형 30%",
+  high: "예금성 자산 20% · 채권혼합형 20% · 주식형 60%",
+};
+
+let quizMode = null;       // 'quick' | 'full'
 let quizAnswers = [];
 let quizStep = 0;
+let fullAxisScores = {};
 
 function openQuiz() {
-  quizAnswers = [];
-  quizStep = 0;
+  quizMode = null;
   document.getElementById('quiz-overlay').classList.add('show');
-  renderQuizStep();
+  renderModeSelect();
 }
 function closeQuiz() { document.getElementById('quiz-overlay').classList.remove('show'); }
 
+function renderModeSelect() {
+  document.getElementById('quiz-body').innerHTML = `
+    <div class="quiz-mode-select">
+      <button class="quiz-mode-card" onclick="startQuiz('quick')">
+        <div class="mode-title">요약 진단 (3문항)</div>
+        <div class="mode-desc">간략한 응답으로 저·중·고위험 성향을 빠르게 확인합니다.</div>
+      </button>
+      <button class="quiz-mode-card" onclick="startQuiz('full')">
+        <div class="mode-title">정밀 진단 (9문항)</div>
+        <div class="mode-desc">손실 감내도·투자 기간·재정 안정성·투자 경험 4개 축을 세부적으로 측정하고, 참고 자산배분 예시를 함께 제공합니다.</div>
+      </button>
+    </div>
+  `;
+}
+
+function startQuiz(mode) {
+  quizMode = mode;
+  quizAnswers = [];
+  quizStep = 0;
+  renderQuizStep();
+}
+
 function renderQuizStep() {
   const body = document.getElementById('quiz-body');
-  if (quizStep >= QUIZ_QUESTIONS.length) {
-    renderQuizResult();
+  const questions = quizMode === 'full' ? FULL_QUESTIONS : QUIZ_QUESTIONS;
+  if (quizStep >= questions.length) {
+    if (quizMode === 'full') renderFullQuizResult();
+    else renderQuizResult();
     return;
   }
-  const q = QUIZ_QUESTIONS[quizStep];
+  const q = questions[quizStep];
   body.innerHTML = `
     <div class="quiz-q">
       <div class="q-text">${q.text}</div>
       ${q.options.map((o,i) => `<button class="quiz-opt" onclick="answerQuiz(${i})">${o.label}</button>`).join('')}
     </div>
-    <div style="font-family:var(--mono);font-size:11px;color:var(--ink-soft)">${quizStep+1} / ${QUIZ_QUESTIONS.length}</div>
+    <div style="font-family:var(--mono);font-size:11px;color:var(--ink-soft)">${quizStep+1} / ${questions.length}</div>
   `;
 }
 
 function answerQuiz(optionIndex) {
-  const q = QUIZ_QUESTIONS[quizStep];
-  quizAnswers.push(q.options[optionIndex].score);
+  const questions = quizMode === 'full' ? FULL_QUESTIONS : QUIZ_QUESTIONS;
+  const q = questions[quizStep];
+  quizAnswers.push({ axis: q.axis, score: q.options[optionIndex].score });
   quizStep++;
   renderQuizStep();
 }
 
 function renderQuizResult() {
-  const total = quizAnswers.reduce((a,b)=>a+b, 0);
+  const total = quizAnswers.reduce((a,b)=>a+b.score, 0);
   let key = 'low';
   if (total >= 4) key = 'high';
   else if (total >= 2) key = 'mid';
@@ -593,7 +748,64 @@ function renderQuizResult() {
         <b>본 진단 결과는 참고 자료이며, 확정적인 투자 권고가 아닙니다.</b><br><br>
         제시된 상품군은 일반적인 특성을 안내하는 것이며, 실제 투자 결정과 그에 따른 책임은 전적으로 투자자 본인에게 있습니다. 상당한 규모의 자산을 운용하기에 앞서 반드시 전문가와의 상담을 거치시기를 권합니다.
       </div>
-      <button class="quiz-restart" onclick="openQuiz()">다시 진단하기</button>
+      <button class="quiz-restart" onclick="openQuiz()">처음으로</button>
+    </div>
+  `;
+}
+
+function renderFullQuizResult() {
+  // 축별 합산
+  const axisTotals = { loss:0, horizon:0, stability:0, experience:0 };
+  quizAnswers.forEach(a => { axisTotals[a.axis] += a.score; });
+
+  const grandTotal = Object.values(axisTotals).reduce((a,b)=>a+b, 0); // max 18
+  let key = 'low';
+  if (grandTotal >= 13) key = 'high';
+  else if (grandTotal >= 7) key = 'mid';
+  const r = QUIZ_RESULTS[key];
+
+  const axisRows = Object.keys(AXIS_META).map(k => {
+    const meta = AXIS_META[k];
+    const dots = Math.round(axisTotals[k] / meta.max * 5);
+    const dotStr = "●".repeat(dots) + "○".repeat(5 - dots);
+    return { key:k, label: meta.label, dots, dotStr, score: axisTotals[k], max: meta.max };
+  });
+
+  // 축 간 불균형 인사이트 (최댓값-최솟값 축 비교)
+  const sorted = [...axisRows].sort((a,b) => (b.dots/5) - (a.dots/5));
+  const highest = sorted[0];
+  const lowest = sorted[sorted.length - 1];
+  let insight = "";
+  if (highest.dots - lowest.dots >= 3) {
+    insight = `${highest.label}은(는) 높게 측정되었으나 ${lowest.label}은(는) 상대적으로 낮게 측정되었습니다. 이러한 경우, 종합 등급이 제시하는 상품군보다 다소 보수적인 접근이 안전할 수 있습니다.`;
+  } else {
+    insight = "네 개 축의 측정 결과가 비교적 고르게 분포되어 있어, 종합 등급에 부합하는 일반적인 자산배분 전략을 적용하기에 무리가 없는 유형입니다.";
+  }
+
+  document.getElementById('quiz-body').innerHTML = `
+    <div class="quiz-result">
+      <span class="badge ${r.cls}">${r.badge}</span>
+      <h4>${r.title}</h4>
+      <p>${r.text}</p>
+
+      ${axisRows.map(row => `
+        <div class="axis-row">
+          <div class="axis-label"><span>${row.label}</span><span class="axis-dots">${row.dotStr}</span></div>
+        </div>
+      `).join('')}
+
+      <div class="insight-box">${insight}</div>
+
+      <div class="allocation-box">
+        <div class="alloc-title">// 참고 자산배분 예시</div>
+        <div class="alloc-value">${ALLOCATION_BY_GRADE[key]}</div>
+      </div>
+
+      <div class="quiz-disclaimer">
+        <b>본 진단 결과는 참고 자료이며, 확정적인 투자 권고가 아닙니다.</b><br><br>
+        제시된 자산배분 예시는 일반적인 성향 분류에 따른 참고 자료이며, 특정 상품이나 종목에 대한 권유가 아닙니다. 실제 자산배분은 개인의 재무 목표, 세제 여건, 시장 상황에 따라 달라질 수 있으므로 정기적인 재조정(리밸런싱)이 필요합니다. 투자 결정과 그에 따른 책임은 전적으로 투자자 본인에게 있으며, 상당한 규모의 자산을 운용하기에 앞서 반드시 전문가와의 상담을 거치시기를 권합니다.
+      </div>
+      <button class="quiz-restart" onclick="openQuiz()">처음으로</button>
     </div>
   `;
 }
