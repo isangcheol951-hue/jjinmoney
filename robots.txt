@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://isangcheol1951-hue.github.io/jjinmoney/sitemap.xml
